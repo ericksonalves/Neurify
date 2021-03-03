@@ -13,7 +13,7 @@
 
 #define AVG_WINDOW 5
 #define MAX_THREAD 56
-#define MIN_DEPTH_PER_THREAD 5 
+#define MIN_DEPTH_PER_THREAD 5
 
 int NEED_PRINT = 0;
 int NEED_FOR_ONE_RUN = 0;
@@ -150,19 +150,33 @@ bool check_not_max_norm(struct NNet *nnet, struct Interval *output){
     return false;
 }
 
+bool check_diff_idx(struct NNet *nnet, struct Interval *output, int idx){
+  return nnet->target == idx;
+}
+
+bool check_diff_idx1(struct NNet *nnet, struct Matrix *output, int idx){
+  return nnet->target == idx;
+}
+
+bool check_diff_idx_norm(struct NNet *nnet, struct Interval *output, int idx){
+  return nnet->target == idx;
+}
 
 /*
- * Here is the function checking whether the output range always 
+ * Here is the function checking whether the output range always
  * satisfies your customized safety property.
  */
 bool check_functions(struct NNet *nnet, struct Interval *output){
-    if (PROPERTY == 1){
-        /*
-         * You need to customize your own checking function
-         * For instance, you can check whether the first output
-         * is always the smallest. You can also check whether 
-         * one of the output is always larger than 0.001, etc.
-         */
+    if (PROPERTY == 1000){
+      return check_diff_idx(nnet, output, 0);
+    } else if (PROPERTY == 1001){
+      return check_diff_idx(nnet, output, 1);
+    } else if (PROPERTY == 1002){
+      return check_diff_idx(nnet, output, 2);
+    } else if (PROPERTY == 1003){
+      return check_diff_idx(nnet, output, 3);
+    } else if (PROPERTY == 1004){
+      return check_diff_idx(nnet, output, 4);
     }
 
     return check_not_max(nnet, output);
@@ -170,41 +184,46 @@ bool check_functions(struct NNet *nnet, struct Interval *output){
 
 
 /*
- * Here is the function checking whether the output range always 
+ * Here is the function checking whether the output range always
  * satisfies your customized safety property but without output norm.
  * This is only used in network_test.c once for checking before splits.
  */
 bool check_functions_norm(struct NNet *nnet, struct Interval *output){
+    if (PROPERTY == 1000){
+      return check_diff_idx_norm(nnet, output, 0);
+    } else if (PROPERTY == 1001){
+      return check_diff_idx_norm(nnet, output, 1);
+    } else if (PROPERTY == 1002){
+      return check_diff_idx_norm(nnet, output, 2);
+    } else if (PROPERTY == 1003){
+      return check_diff_idx_norm(nnet, output, 3);
+    } else if (PROPERTY == 1004){
+      return check_diff_idx_norm(nnet, output, 4);
+    }
+
     return check_not_max_norm(nnet, output);
 }
 
 
 /*
- * Here is the function checking whether the given concrete outupt 
+ * Here is the function checking whether the given concrete outupt
  * violates your customized safety property.
  */
 bool check_functions1(struct NNet *nnet, struct Matrix *output){
-
-    if (PROPERTY == 1){
-        /*
-         * You need to customize your own checking function for adv
-         * For instance, you can check whether the first output
-         * is always the smallest. You can also check whether 
-         * one of the output is always larger than 0.001, etc.
-         */
+    if (PROPERTY == 1000){
+      return check_diff_idx1(nnet, output, 0);
+    } else if (PROPERTY == 1001){
+      return check_diff_idx1(nnet, output, 1);
+    } else if (PROPERTY == 1002){
+      return check_diff_idx1(nnet, output, 2);
+    } else if (PROPERTY == 1003){
+      return check_diff_idx1(nnet, output, 3);
+    } else if (PROPERTY == 1004){
+      return check_diff_idx1(nnet, output, 4);
     }
 
     return check_not_max1(nnet, output);
 }
-
-
-
-
-
-
-
-
-
 
 /*
  * Multithread function
@@ -284,14 +303,14 @@ int sym_relu_lp(struct SymInterval *new_sInterval,
                     struct Interval *input,
                     struct NNet *nnet,
                     int layer, int err_row,
-                    int *wrong_nodes_map, 
+                    int *wrong_nodes_map,
                     int*wrong_node_length, int *node_cnt,
                     int target, int *sigs,
                     lprec *lp, int *rule_num){
 
 
     int inputSize = nnet->inputSize;
-    
+
     //record the number of wrong nodes
     int wcnt = 0;
 
@@ -385,7 +404,7 @@ bool forward_prop_interval_equation_conv_lp(struct NNet *nnet,
             };
     struct Matrix new_equation_err_matrix = {
                 (float*)new_equation_err, ERR_NODE, inputSize
-            };  
+            };
 
     struct SymInterval sInterval = {
                 &equation_matrix, &equation_err_matrix
@@ -394,21 +413,21 @@ bool forward_prop_interval_equation_conv_lp(struct NNet *nnet,
                 &new_equation_matrix, &new_equation_err_matrix
             };
 
-    
+
     for (int i=0; i < nnet->inputSize; i++)
     {
         equation[i*(inputSize+1)+i] = 1;
-    }    
+    }
 
     //err_row is the number that is wrong before current layer
     int err_row=0;
     for (int layer = 0; layer<numLayers; layer++)
     {
         //printf("sig:%d, layer:%d\n",sig, layer );
-        
+
         memset(new_equation, 0, sizeof(float)*(inputSize+1)*maxLayerSize);
         memset(new_equation_err,0,sizeof(float)*ERR_NODE*maxLayerSize);
-        
+
         if (CHECK_ADV_MODE){
             if(layer>0 && nnet->layerTypes[layer]==0 &&\
                         nnet->layerTypes[layer-1]==1){
@@ -445,7 +464,7 @@ bool forward_prop_interval_equation_conv_lp(struct NNet *nnet,
                 sym_conv_layer(&sInterval, &new_sInterval, nnet, layer, err_row);
             }
         }
-        
+
         if(layer<(numLayers-1)){
             // printf("relu layer\n");
             sym_relu_lp(&new_sInterval, input, nnet, layer,\
@@ -464,18 +483,18 @@ bool forward_prop_interval_equation_conv_lp(struct NNet *nnet,
                     printf("target:%d, sig:%d, node:%d, l:%f, u:%f\n",\
                                 target, sigs[target], i, tempVal_lower, tempVal_upper);
                 }
-                
+
 
                 if(i!=nnet->target){
                     float upper_err=0, lower_err=0;
                     for(int k=0;k<inputSize+1;k++){
                         new_equation[k+i*(inputSize+1)] -=\
-                                new_equation[k+nnet->target*(inputSize+1)]; 
+                                new_equation[k+nnet->target*(inputSize+1)];
                     }
                     //if(i < nnet->target){
                     //    new_equation[inputSize+i*(inputSize+1)] -= bias.data[nnet->target];
                     //}
-                    
+
                     for(int err_ind=0;err_ind<err_row;err_ind++){
                         new_equation_err[err_ind+i*ERR_NODE] -=\
                                     new_equation_err[err_ind+nnet->target*ERR_NODE];
@@ -532,7 +551,7 @@ bool forward_prop_interval_equation_conv_lp(struct NNet *nnet,
                 node_cnt++;
             }
         }
-    
+
         //printf("\n");
         memcpy(equation, new_equation, sizeof(float)*(inputSize+1)*maxLayerSize);
         memcpy(equation_err, new_equation_err, sizeof(float)*(ERR_NODE)*maxLayerSize);
@@ -609,7 +628,7 @@ bool direct_run_check_conv_lp(struct NNet *nnet, struct Interval *input,
     }
     else{
         if(!adv_found)
-            if(NEED_PRINT) 
+            if(NEED_PRINT)
                 printf("depth:%d, sig:%d, UNSAT, great!\n\n", depth, sigs[target]);
     }
     return isOverlap;
@@ -626,7 +645,7 @@ bool split_interval_conv_lp(struct NNet *nnet, struct Interval *input,
         pthread_mutex_unlock(&lock);
         return false;
     }
-    
+
     if(depth>=MAX_DEPTH){
         printf("Maximum depth reached\n");
         analysis_uncertain = true;
@@ -665,7 +684,7 @@ bool split_interval_conv_lp(struct NNet *nnet, struct Interval *input,
     int rule_num1 = *rule_num;
     int rule_num2 = *rule_num;
 
-    int total_nodes = 0; 
+    int total_nodes = 0;
     for(int layer=1;layer<nnet->numLayers;layer++){
         total_nodes += nnet->layerSizes[layer];
     }
