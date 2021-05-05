@@ -578,17 +578,39 @@ void load_inputs(int img, int inputSize, float *input){
         exit(1);
     }
     char str[12];
-    char image_name[18];
+    char image_name[100];
 
     /*
      * Customize your own dataset
      */
 
-    char tmp[18] = "images/image";
+    char root[30] = "images/";
+    char folder[30];
+    char filename[30];
+
+    char tmp[100];
+
+    if (PROPERTY == 1000) {
+        strcpy(folder, "iris/0_Setosa/L0_R10/");
+        strcpy(filename, "l0r10");
+    } else if (PROPERTY == 1001) {
+        strcpy(folder, "iris/1_Versicolor/L1_R10/");
+        strcpy(filename, "l1r10_image");
+    } else if (PROPERTY == 1002) {
+        strcpy(folder, "iris/2_Virginica/L2_R10/");
+        strcpy(filename, "l2r10_image");
+    } else {
+        strcpy(folder, "");
+        strcpy(filename, "image");
+    }
+
+    sprintf(tmp, "%s%s%s", root, folder, filename);
+
     strcpy(image_name, tmp);
 
     sprintf(str, "%d", img);
-    FILE *fstream = fopen(strcat(image_name,str),"r");
+
+    FILE *fstream = fopen(strcat(image_name, str),"r");
     if (fstream == NULL)
     {
         printf("no input:%s!\n", image_name);

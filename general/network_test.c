@@ -116,9 +116,9 @@ int main( int argc, char *argv[]){
          */
     }
     else{
-        image_length = 1;
+        image_length = 1000;
         image_start = 0;
-        INF = 0;
+        INF = 257;
     }
 
     int adv_num = 0;
