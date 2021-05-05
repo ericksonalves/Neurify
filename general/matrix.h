@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <sys/time.h>
 #include <time.h>
-#include <openblas/cblas.h>
+#include <cblas.h>
 
 struct Matrix
 {
