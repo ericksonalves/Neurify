@@ -592,7 +592,7 @@ void load_inputs(int img, int inputSize, float *input){
 
     if (PROPERTY == 1000) {
         strcpy(folder, "iris/0_Setosa/L0_R10/");
-        strcpy(filename, "l0r10");
+        strcpy(filename, "l0r10_image");
     } else if (PROPERTY == 1001) {
         strcpy(folder, "iris/1_Versicolor/L1_R10/");
         strcpy(filename, "l1r10_image");
